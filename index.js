@@ -11,24 +11,35 @@ var audio_yellow = new Audio("sounds/yellow.mp3")
 var audio_wrong = new Audio("sounds/wrong.mp3")
 
 
-beginGame();
+var started = false;
+var level = 0;
 
-function beginGame () {
-	$(document).keydown(function () {
-		nextSequence(randomNumber(), sequence, buttonColors);
-		animateButton(sequence[sequence.length-1]);
-	});	
-}
+$(document).keydown(function () {
+	if (!started) {
+		nextSequence();
+	}
+});
 
-//Add randomly generated colors to the game sequence
-function nextSequence(number, sequence, colors) {
-	return sequence.push(colors[number]);
-}
 
 //Generate random number
 function randomNumber () {
 	var number = Math.floor(Math.random()*4)
 	return number;
+}
+
+function nextSequence() {
+		started = true;
+		level ++;
+		playerSequence = [];
+		$("#level-title").text("Level " + level);
+
+		var newColor = randomNumber();
+		sequence.push(buttonColors[newColor]);
+		
+
+		setTimeout(function() {animateButton(buttonColors[newColor])}, 1000);
+		setTimeout(function() {playAudio(buttonColors[newColor])}, 1000);
+		
 }
 
 //Animate button pressing
@@ -41,24 +52,8 @@ function animateButton(animatedClass) {
 
 //Play audio
 function playAudio(color) {
-	switch(color) {
-		case "blue":
-			audio_blue.play();
-			break;
-		case "green":
-			audio_green.play();
-			break;
-		case "red":
-			audio_red.play();
-			break;
-		case "yellow":
-			audio_yellow.play();
-			break;
-		case "wrong":
-			audio_wrong.play();
-			break;
-		default:;
-	}
+	var audio = new Audio("sounds/" + color + ".mp3");
+  	audio.play();
 }
 
 //Detect clicked buttons
@@ -68,19 +63,23 @@ $(".btn").click(function(event) {
 	
 	if (event.target.id !== sequence[playerSequence.length - 1]) {
 
-
 		playAudio("wrong");
-		beginGame();
+		$("body").addClass("game-over");
+		$("#level-title").text("Game Over, Press Any Key to Restart");
+		setTimeout(function() {$("body").removeClass("game-over")}, 200);
+		reset();
 	}
 	playAudio(event.target.id);
 
 	if (playerSequence.length === sequence.length) {
-		nextSequence(randomNumber(), sequence, buttonColors);
-		setTimeout(function() {animateButton(sequence[sequence.length-1])}, 1000);
-		playerSequence = [];
-	}
-			
-	
-	//alert(sequence[]);
+		nextSequence();
+		
+	}		
 })
+
+function reset() {
+	started=false;
+	level=0;
+	sequence=[];
+}
 
